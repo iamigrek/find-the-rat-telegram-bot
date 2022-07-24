@@ -2,7 +2,7 @@ require('dotenv').config()
 const express = require('express')
 const app = express()
 const dbConfig = require('./config/dataBase.js')
-const { startTelegramBot } = require('./config/bot.js')
+const { startTelegramBot } = require('./bot/bot.js')
 const { store, update } = require('./controller/StatsCont')
 
 dbConfig.connectWithRetry() // connect to mongodb
