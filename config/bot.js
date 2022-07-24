@@ -35,26 +35,33 @@ const startTelegramBot = () => {
 			parse_mode: 'Markdown'
 		};
 
-		await bot.sendMessage(msg.from.id, `*${msg.from.first_name}*, відгадай, в якій руці щур!`, gameOptions);
+		await bot.sendMessage(msg.chat.id, `*${msg.from.first_name}*, відгадай, в якій руці щур!`, gameOptions)
+			.then(async (m) => {
+				await checkBtns(msg.chat.id, m.message_id)
+			})
 	});
 
-	const getRandomNumber = max => Math.floor(Math.random() * max)
+	const checkBtns = (chatId, messageId) => {
+		const getRandomNumber = max => Math.floor(Math.random() * max)
 
-	bot.on('callback_query', async msg => {
-		await bot.deleteMessage(msg.from.id, msg.message.message_id)
+		bot.on('callback_query', async msg => {
+			const successfulRandomStickerId = SUCCESSFUL_STICKER_CONFIG[getRandomNumber(SUCCESSFUL_STICKER_CONFIG.length)]
+			const badRandomStickerId = BAD_STICKER_CONFIG[getRandomNumber(BAD_STICKER_CONFIG.length)]
 
-		const successfulRandomStickerId = SUCCESSFUL_STICKER_CONFIG[getRandomNumber(SUCCESSFUL_STICKER_CONFIG.length)]
-		const badRandomStickerId = BAD_STICKER_CONFIG[getRandomNumber(BAD_STICKER_CONFIG.length)]
-
-		const correctAnswer = getRandomNumber(3)
-		if (correctAnswer == msg.data) {
-			await bot.sendMessage(msg.from.id, 'Ага, піймався, пацюче!🤩');
-			bot.sendSticker(msg.from.id, successfulRandomStickerId)
-		} else {
-			await bot.sendMessage(msg.from.id, 'Йому вдалося вислизнути!😡');
-			bot.sendSticker(msg.from.id, badRandomStickerId)
-		}
-	})
+			const correctAnswer = getRandomNumber(3)
+			if (correctAnswer == msg.data) {
+				console.log(msg);
+				await bot.sendMessage(msg.message.chat.id, 'Ага, піймався, пацюче!🤩');
+				bot.sendSticker(msg.message.chat.id, successfulRandomStickerId)
+			} else {
+				console.log(msg);
+				await bot.sendMessage(msg.message.chat.id, 'Йому вдалося вислизнути!😡');
+				bot.sendSticker(msg.message.chat.id, badRandomStickerId)
+			}
+			bot.deleteMessage(chatId, messageId)
+			bot.removeListener("callback_query")
+		})
+	}
 }
 
 module.exports = {
